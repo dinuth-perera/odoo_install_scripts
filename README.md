@@ -26,9 +26,9 @@ This guide provides instructions for installing Odoo 18 on Ubuntu 24.04 LTS usin
 ### Step 1: Download the Installation Script
 
 ```bash
-wget https://raw.githubusercontent.com/dinuth-perera/odoo_install_scripts/18.0/odoo18-install.sh
+wget https://raw.githubusercontent.com/dinuth-perera/odoo_install_scripts/18.0/odoo18_install_script.sh
 # or
-curl -O https://raw.githubusercontent.com/dinuth-perera/odoo_install_scripts/18.0/odoo18-install.sh
+curl -O https://raw.githubusercontent.com/dinuth-perera/odoo_install_scripts/18.0/odoo18_install_script.sh
 ```
 
 ### Step 2: Review and Customize (Optional)
