@@ -39,6 +39,8 @@ DB_HOST="localhost"
 DB_PORT="5432"
 DB_USER="$OE_USER"
 DB_PASSWORD="False"
+DB_CREATE_SUPERUSER="True"  # Set to True to create PostgreSQL superuser instead of regular user
+USE_PGPASS="False"           # Set to True to use .pgpass file instead of storing password in odoo.conf
 
 # Color variables for better readability
 GREEN='\033[0;32m'
@@ -87,9 +89,42 @@ sudo apt install -y postgresql postgresql-contrib
 sudo systemctl start postgresql
 sudo systemctl enable postgresql
 
-print_status "Creating PostgreSQL user $OE_USER..."
-# Create PostgreSQL user for Odoo
-sudo -u postgres psql -c "CREATE USER $OE_USER WITH CREATEDB LOGIN PASSWORD '$OE_USER';" 2> /dev/null || true
+#--------------------------------------------------
+# Set up PostgreSQL user and authentication
+#--------------------------------------------------
+print_status "Setting up PostgreSQL user and authentication..."
+
+# Generate or set password
+if [ $GENERATE_RANDOM_PASSWORD = "True" ]; then
+    DB_PASSWORD=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)
+    print_status "Generated random database password: $DB_PASSWORD"
+else
+    DB_PASSWORD="$OE_USER"  # Use OE_USER as password if not generating random one
+fi
+
+# Create PostgreSQL user with appropriate privileges
+if [ $DB_CREATE_SUPERUSER = "True" ]; then
+    print_status "Creating PostgreSQL superuser $OE_USER..."
+    sudo -u postgres psql -c "CREATE USER $OE_USER WITH SUPERUSER CREATEDB LOGIN PASSWORD '$DB_PASSWORD';" 2> /dev/null || {
+        print_warning "User may already exist, trying to alter user instead..."
+        sudo -u postgres psql -c "ALTER USER $OE_USER WITH SUPERUSER CREATEDB LOGIN PASSWORD '$DB_PASSWORD';" 2> /dev/null
+    }
+    print_warning "Note: Using superuser privileges for database is less secure but can resolve some permission issues."
+else
+    print_status "Creating PostgreSQL user $OE_USER with CREATEDB privilege..."
+    sudo -u postgres psql -c "CREATE USER $OE_USER WITH CREATEDB LOGIN PASSWORD '$DB_PASSWORD';" 2> /dev/null || {
+        print_warning "User may already exist, trying to alter user instead..."
+        sudo -u postgres psql -c "ALTER USER $OE_USER WITH CREATEDB LOGIN PASSWORD '$DB_PASSWORD';" 2> /dev/null
+    }
+fi
+
+# Set up .pgpass file if enabled
+if [ $USE_PGPASS = "True" ]; then
+    print_status "Setting up .pgpass for secure PostgreSQL authentication..."
+    sudo su - $OE_USER -c "echo '$DB_HOST:$DB_PORT:*:$DB_USER:$DB_PASSWORD' > ~/.pgpass"
+    sudo su - $OE_USER -c "chmod 600 ~/.pgpass"
+    print_status "PostgreSQL authentication is configured using .pgpass file at $OE_HOME/.pgpass"
+fi
 
 #--------------------------------------------------
 # Install Python dependencies
@@ -237,9 +272,11 @@ db_user = ${DB_USER}
 db_name = False
 EOF
 
-# Add password to config if provided
-if [ "$DB_PASSWORD" != "False" ]; then
+# Add password to config file if not using .pgpass
+if [ $USE_PGPASS = "False" ]; then
     sudo su root -c "echo 'db_password = ${DB_PASSWORD}' >> /etc/${OE_CONFIG}.conf"
+else
+    sudo su root -c "echo '; Password is stored in .pgpass file for security' >> /etc/${OE_CONFIG}.conf"
 fi
 
 # Configure addons path
@@ -436,6 +473,20 @@ print_status "User Service: $OE_USER"
 print_status "Configuration File: /etc/${OE_CONFIG}.conf"
 print_status "Logs Path: /var/log/$OE_USER"
 print_status "Admin Password: $OE_SUPERADMIN"
+print_status "Database Password: $DB_PASSWORD"
+
+if [ $DB_CREATE_SUPERUSER = "True" ]; then
+    print_status "PostgreSQL Role: SUPERUSER (has full database access)"
+else
+    print_status "PostgreSQL Role: Regular user with CREATEDB privilege"
+fi
+
+if [ $USE_PGPASS = "True" ]; then
+    print_status "Authentication: Using .pgpass file (${OE_HOME}/.pgpass)"
+else
+    print_status "Authentication: Password stored in configuration file"
+fi
+
 print_status "=============================================="
 print_status "Service Commands:"
 print_status "Start Odoo: sudo systemctl start $OE_CONFIG"
