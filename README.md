@@ -2,6 +2,46 @@
 
 This guide provides instructions for installing Odoo 18 on Ubuntu 24.04 LTS using the automated installation script.
 
+# Features Overview for Odoo 18 Installation Script
+
+This section outlines the key capabilities and highlights of the Odoo 18 installation script for Ubuntu 24.04.
+
+## ✅ One-Command Full Installation
+Install Odoo 18 CE or EE, PostgreSQL, Python dependencies, systemd service, and config—all in one command.
+
+## 🌐 Optional Nginx with SSL (Let's Encrypt)
+Automatic setup of Nginx reverse proxy with SSL certificate generation and renewal.
+
+## 🔐 Secure by Default
+- Generates a random strong master password
+- Creates a system user with restricted permissions
+- Includes guidance for enabling and configuring UFW firewall
+- Configured systemd service with basic hardening options
+
+## 🧪 Python Virtual Environment Support
+Installs and runs Odoo in an isolated Python environment for clean dependency management and better compatibility.
+
+## 🔁 Enterprise Edition Compatible
+Easily configure Enterprise edition installation (requires valid GitHub credentials and Odoo subscription).
+
+## 🛠️ Customizable Parameters
+All major install settings (port, system user, directory paths, domain, etc.) are declared at the top of the script.
+
+## 📦 Wkhtmltopdf Auto Installer
+Installs the correct version of `wkhtmltopdf` for generating reports and PDFs.
+
+## 📄 Service Management Made Easy
+- Installs systemd service for Odoo
+- Logs saved to `/var/log/odoo18`
+- Easy commands to start, stop, restart, and monitor the service
+
+## 🧹 Clean and Minimal Footprint
+Minimal dependencies, clear folder structure, avoids unnecessary packages and services.
+
+## 🆙 Upgrade-Friendly Structure
+Post-install structure allows for manual or scripted Odoo updates without needing to reinstall the whole system.
+
+
 ## Table of Contents
 
 - [Prerequisites](#prerequisites)
