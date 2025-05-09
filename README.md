@@ -36,19 +36,19 @@ curl -O https://raw.githubusercontent.com/dinuth-perera/odoo_install_scripts/18.
 Open the script to customize installation parameters:
 
 ```bash
-nano odoo18-install.sh
+nano odoo18_install_script.sh
 ```
 
 ### Step 3: Make the Script Executable
 
 ```bash
-chmod +x odoo18-install.sh
+chmod +x odoo18_install_script.sh
 ```
 
 ### Step 4: Run the Installation Script
 
 ```bash
-sudo ./odoo18-install.sh
+sudo ./odoo18_install_script.sh
 ```
 
 The installation will take a few minutes. When completed, you'll see a summary of your installation details.
